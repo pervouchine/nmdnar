@@ -1,6 +1,5 @@
 args <- commandArgs(trailingOnly = TRUE)
-# Usage: Rscript plot.r control_file target_file pvalue.cutoff title output
-#args=c('ENCFF303ZST','ENCFF109RMW','ENCFF451VCI','ENCFF957JFM')
+# Usage: Rscript plot.r target1 target2 control1 control2 pvalue.cutoff title output
 
 require(plyr)
 
@@ -16,12 +15,12 @@ pool_biorep <- function(df1,df2) {
     with(df, data.frame(id=id, inc=inc.x+inc.y, exc=exc.x+exc.y))
 }
 
-control1 = read.delim(paste("data/shRNA/A07/",args[1],".A07.tsv", sep=""), col.names=c('id','inc','exc'))
-control2 = read.delim(paste("data/shRNA/A07/",args[2],".A07.tsv", sep=""), col.names=c('id','inc','exc'))
+control1 = read.delim(paste("data/shRNA/A07/",args[3],".A07.tsv", sep=""), col.names=c('id','inc','exc'))
+control2 = read.delim(paste("data/shRNA/A07/",args[4],".A07.tsv", sep=""), col.names=c('id','inc','exc'))
 control = compute_psi(pool_biorep(control1, control2))
 
-target1 = read.delim(paste("data/shRNA/A07/",args[3],".A07.tsv", sep=""), col.names=c('id','inc','exc'))
-target2 = read.delim(paste("data/shRNA/A07/",args[4],".A07.tsv", sep=""), col.names=c('id','inc','exc'))
+target1 = read.delim(paste("data/shRNA/A07/",args[1],".A07.tsv", sep=""), col.names=c('id','inc','exc'))
+target2 = read.delim(paste("data/shRNA/A07/",args[2],".A07.tsv", sep=""), col.names=c('id','inc','exc'))
 target = compute_psi(pool_biorep(target1,target2))
 
 gene_names = read.delim(pipe("grep -v orf data/exon_gene.tsv | grep -v RP"), header=F)
