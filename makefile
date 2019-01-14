@@ -11,32 +11,26 @@ data/eCLIP/exon_peaks.bed : data/eCLIP/dump.tsv data/exon_gene.tsv
 data/eCLIP/peaks_exon_w1000.bed : data/eCLIP/exon_peaks.bed
 	awk -v OFS="\t" '{split($$10,a,"_");if(a[1]==$$4){print $$1"_"$$2"_"$$3"_"$$6,a[1]}}' data/eCLIP/exon_peaks.bed | sort -u > data/eCLIP/peaks_exon_w1000.bed
 
-data/shRNA/K562.tsv : data/shRNA/B07/SRSF7_K562.tsv
-	awk '$$1==$$4' data/shRNA/B07/*K562.tsv > data/shRNA/K562.tsv
+shRNA.mk : data/shRNA_table.tsv
+	awk -v dir=data/shRNA/ '{out=dir"B07/"$$6"_"$$5".tsv "; print  out ": "dir"A07/"$$1".A07.tsv "dir"A07/"$$2".A07.tsv "dir"A07/"$$3".A07.tsv "dir"A07/"$$4".A07.tsv\n\tRscript deltaPSIc.r "dir,$$1,$$2,$$3,$$4,$$5,$$6"\n"; all=all out}END{print "all :" all}' data/shRNA_table.tsv > shRNA.mk
 
-data/shRNA/HepG2.tsv : data/shRNA/B07/SRSF7_HepG2.tsv
-	awk '$$1==$$4' data/shRNA/B07/*HepG2.tsv > data/shRNA/HepG2.tsv
+data/shRNA/deltaPSI.tsv : shRNA.mk
+	make -f shRNA.mk all
+	awk '$$1==$$4' data/shRNA/B07/*.tsv > data/shRNA/deltaPSI.tsv
 
-hub/shRNA-KD.bed : data/shRNA/K562.tsv data/shRNA/HepG2.tsv
+hub/shRNA-KD.bed : data/shRNA/deltaPSI.tsv
 	mkdir -p hub/
-	awk '$$6>0.05 || $$6<-0.05' data/shRNA/*.tsv | awk -v OFS="\t" '{split($$3,a,"_");print a[1],a[2],a[3],"dPSI("$$1")="$$6,1000,a[4],a[2],a[3], ($$6>0? "255,0,0" : "0,0,255")}' | sort -k1,1 -k2,2n | awk 'BEGIN{print "track name=\"shRNA-KD\" description=\"delta PSI in RBP shRNA-KD\" visibility=3 itemRgb=\"On\""}{print}'> hub/shRNA-KD.bed
+	awk '$$6>0.05 || $$6<-0.05' data/shRNA/deltaPSI.tsv | awk -v OFS="\t" '{split($$3,a,"_");print a[1],a[2],a[3],"dPSI("$$1")="$$6,1000,a[4],a[2],a[3], ($$6>0? "255,0,0" : "0,0,255")}' | sort -k1,1 -k2,2n | awk 'BEGIN{print "track name=\"shRNA-KD\" description=\"delta PSI in RBP shRNA-KD\" visibility=3 itemRgb=\"On\""}{print}'> hub/shRNA-KD.bed
 
-data/shRNA_table.tsv :
+data/shRNA_table.tsv data/upf1xrn1/A07/SRR1275413Aligned.sortedByCoord.out.A07.tsv:
 	wget https://cb.skoltech.ru/~dp/papers/nmd/data.tar.gz
 	tar -xf data.tar.gz
 	rm -f data.tar.gz
 
-data/shRNA/B07/SRSF7_K562.tsv: data/shRNA_table.tsv
-	mkdir -p data/shRNA/B07/
-	awk '{cmd = "Rscript deltaPSIc.r data/shRNA/ "$$1" "$$2" "$$3" "$$4" "$$5" "$$6;system(cmd)}' data/shRNA_table.tsv
-
-
-all :: data/shRNA/B07/SRSF7_K562.tsv
-
 ##############################################
 
-upf1xrn1vscontrol.pdf : data/upf1xrn1/A07/SRR1275413Aligned.sortedByCoord.out.A07.tsv data/upf1xrn1/A07/SRR1275416Aligned.sortedByCoord.out.A07.tsv plot.r
+upf1xrn1vscontrol.pdf : data/upf1xrn1/A07/SRR1275413Aligned.sortedByCoord.out.A07.tsv data/upf1xrn1/A07/SRR1275416Aligned.sortedByCoord.out.A07.tsv plot.r data/exon_gene.tsv
 	Rscript plot.r data/upf1xrn1/A07/SRR1275413Aligned.sortedByCoord.out.A07.tsv data/upf1xrn1/A07/SRR1275416Aligned.sortedByCoord.out.A07.tsv 0.001 UPF1/XRN1 upf1xrn1vscontrol 
 
-smg6xrn1vscontrol.pdf : data/upf1xrn1/A07/SRR1275413Aligned.sortedByCoord.out.A07.tsv data/upf1xrn1/A07/SRR1275415Aligned.sortedByCoord.out.A07.tsv plot.r
+smg6xrn1vscontrol.pdf : data/upf1xrn1/A07/SRR1275413Aligned.sortedByCoord.out.A07.tsv data/upf1xrn1/A07/SRR1275415Aligned.sortedByCoord.out.A07.tsv plot.r data/exon_gene.tsv
 	Rscript plot.r data/upf1xrn1/A07/SRR1275413Aligned.sortedByCoord.out.A07.tsv data/upf1xrn1/A07/SRR1275415Aligned.sortedByCoord.out.A07.tsv 0.001 SMG6/XRN1 smg6xrn1vscontrol
