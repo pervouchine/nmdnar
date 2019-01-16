@@ -8,9 +8,8 @@ itemRgb Off
 
 track shRNA_KD_RBP
 type bigBed 12 +
-visibility 3
-itemRgb on
 bigDataUrl shRNA-KD.bb
+itemRgb on
 shortLabel shRNA-KD of RBP
 longLabel shRNA-KD of RNA-binding proteins
 
