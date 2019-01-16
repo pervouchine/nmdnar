@@ -1,0 +1,6 @@
+track eCLIP_self_peaks
+type bigBed
+bigDataUrl eCLIP_peaks.bb
+shortLabel eCLIP
+longLabel eCLIP self peaks
+
