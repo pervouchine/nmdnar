@@ -3,10 +3,3 @@ type bigBed
 bigDataUrl eCLIP.bb
 shortLabel eCLIP
 longLabel eCLIP self peaks
-
-track shRNA_KD_RBP
-type bigBed 12 +
-bigDataUrl shRNA-KD.bb
-shortLabel shRNA-KD of RBP
-longLabel shRNA-KD of RNA-binding proteins
-
