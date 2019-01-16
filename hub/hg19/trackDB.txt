@@ -3,3 +3,11 @@ type bigBed
 bigDataUrl eCLIP.bb
 shortLabel eCLIP
 longLabel eCLIP self peaks
+
+track shRNA_KD_RBP
+type bigBed 12
+bigDataUrl shRNA.bb
+itemRgb on
+shortLabel eCLIP
+longLabel eCLIP self peaks
+
