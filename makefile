@@ -37,13 +37,16 @@ data/eCLIP/self_peaks.tsv : data/eCLIP/exon_peaks.bed
 
 # this is a bed file for track hub with all self peaks
 hub/eCLIP_peaks.bed :  data/eCLIP/self_peaks.bed
-	cut -f1-6 data/eCLIP/self_peaks.bed | awk 'BEGIN{print "track name=\"eCLIP\" description=\"eCLIP peaks\" visibility=3 itemRgb=\"Off\""}{print}' > hub/eCLIP_peaks.bed
+	cut -f1-6 data/eCLIP/self_peaks.bed | sort -k1,1 -k2,2n | awk 'BEGIN{print "track name=\"eCLIP\" description=\"eCLIP peaks\" visibility=3 itemRgb=\"Off\""}{print}' > hub/eCLIP_peaks.bed
 
 #### shRNA-KD ####
 
 # this is a make file to compute deltaPSI for all shRNA-KD
 shRNA.mk : data/shRNA_table.tsv
-	awk -v dir=data/shRNA/ '{out=dir"B07/"$$6"_"$$5".tsv "; print  out ": "dir"A07/"$$1".A07.tsv "dir"A07/"$$2".A07.tsv "dir"A07/"$$3".A07.tsv "dir"A07/"$$4".A07.tsv\n\tmkdir -p "dir" B07/\n\tRscript deltaPSIc.r "dir,$$1,$$2,$$3,$$4,$$5,$$6"\n"; all=all out}END{print "all :" all}' data/shRNA_table.tsv > shRNA.mk
+	awk -v dir=data/shRNA/ '{out=dir"B07/"$$6"_"$$5".tsv "; print  out ": "dir"A07/"$$1".A07.tsv "dir"A07/"$$2".A07.tsv "dir"A07/"$$3".A07.tsv "dir"A07/"$$4".A07.tsv\n\tmkdir -p "dir"B07/\n\tRscript deltaPSIc.r "dir,$$1,$$2,$$3,$$4,$$5,$$6"\n"; all=all out}END{print "all :" all}' data/shRNA_table.tsv > shRNA.mk
+
+crispr.mk : data/crispr_table.tsv
+	awk -v dir=data/crispr/ '{out=dir"B07/"$$6"_"$$5".tsv "; print  out ": "dir"A07/"$$1".A07.tsv "dir"A07/"$$2".A07.tsv "dir"A07/"$$3".A07.tsv "dir"A07/"$$4".A07.tsv\n\tmkdir -p "dir"B07/\n\tRscript deltaPSIc.r "dir,$$1,$$2,$$3,$$4,$$5,$$6"\n"; all=all out}END{print "all :" all}' data/crispr_table.tsv > crispr.mk
 
 # this file pools all deltaPSI for exons in RBPs
 data/shRNA/deltaPSI.tsv : shRNA.mk
