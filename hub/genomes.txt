@@ -1,0 +1,2 @@
+genome hg19
+trackDb trackDB.txt

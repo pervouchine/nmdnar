@@ -1,0 +1,5 @@
+hub NMD_autoregulation
+shortLabel NMD autoregulation
+longLabel Integrative transcriptomic analysis suggests new autoregulatory splicing events coupled with nonsense-mediated mRNA decay
+genomesFile genomes.txt
+email d.pervouchine@skoltech.ru
