@@ -1,6 +1,8 @@
 track eCLIP_self_peaks
 type bigBed
 bigDataUrl eCLIP.bb
+itemRgb off
+visibility 3
 shortLabel eCLIP
 longLabel eCLIP self peaks
 
@@ -8,6 +10,16 @@ track shRNA_KD_RBP
 type bigBed 9+
 bigDataUrl shRNA.bb
 itemRgb on
-shortLabel eCLIP
-longLabel eCLIP self peaks
+visibility 3
+shortLabel shRNA-KD of RBPs
+longLabel shRNA-KD of RNA-binding proteins 
+
+track shRNA_KD_UPF1
+type bigBed 9+
+bigDataUrl upf1xrn1.bb
+itemRgb on
+visibility 3
+shortLabel shRNA-KD of UPF1/XRN1
+longLabel shRNA-KD of NMD components
+
 

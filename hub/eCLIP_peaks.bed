@@ -1,4 +1,3 @@
-track name="eCLIP" description="eCLIP peaks" visibility=3 itemRgb="Off"
 chr1	11083458	11083726	TARDBP	1000	+
 chr1	11083883	11083960	TARDBP	1000	+
 chr1	31404428	31404575	PUM1	1000	-
