@@ -24,7 +24,6 @@ data/exon_gene.tsv : data/gencode.v19.annotation.gtf
 
 #### eCLIP ####
 
-
 # exon_peaks.bed contains eCLIP peaks in 1000-nt window around exons
 # cols 1-6 are exon windows (#4 is exon id); #7 is gene name
 # cols 7-17 are eCLIP peaks
@@ -32,12 +31,12 @@ data/eCLIP/exon_peaks.bed : data/eCLIP/dump.tsv data/exon_gene.tsv
 	awk -v OFS="\t" -v w=1000 '{split($$1,a,"_");if(a[2]<w){a[2]=w};print a[1],a[2]-w,a[3]+w,$$1,1,a[4],$$2}' data/exon_gene.tsv | intersectBed -a stdin -b data/eCLIP/dump.tsv -wa -wb -s > data/eCLIP/exon_peaks.bed
 
 # self_peaks.tsv contains three columns: exon_id, peak_id, gene name
-data/eCLIP/self_peaks.tsv : data/eCLIP/exon_peaks.bed
-	intersectBed -a data/eCLIP/dump.tsv -b data/genes.bed -wa -wb -s | awk '{split($$4,a,"_");if(a[1]==$$17){print}}' > data/eCLIP/self_peaks.bed
+data/eCLIP/self_peaks.bed : data/eCLIP/exon_peaks.bed
+	intersectBed -a data/eCLIP/dump.tsv -b data/genes.bed -wa -wb -s | awk '{split($$4,a,"_");if(a[1]==$$17){print}}' | sort -k1,1 -k2,2n > data/eCLIP/self_peaks.bed
 
 # this is a bed file for track hub with all self peaks
 hub/eCLIP_peaks.bed :  data/eCLIP/self_peaks.bed
-	cut -f1-6 data/eCLIP/self_peaks.bed | sort -k1,1 -k2,2n | awk 'BEGIN{print "track name=\"eCLIP\" description=\"eCLIP peaks\" visibility=3 itemRgb=\"Off\""}{print}' > hub/eCLIP_peaks.bed
+	cut -f1-6 data/eCLIP/self_peaks.bed | awk -v OFS="\t" '{split($$4,a,"_");$$4=a[1];print}' | bedtools merge -s -c 4 -o distinct -i stdin | awk -v OFS="\t" '{print $$1,$$2,$$3,$$5,1000,$$4}' | sort -k1,1 -k2,2n | awk 'BEGIN{print "track name=\"eCLIP\" description=\"eCLIP peaks\" visibility=3 itemRgb=\"Off\""}{print}' > hub/eCLIP_peaks.bed
 
 #### shRNA-KD ####
 
