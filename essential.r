@@ -6,6 +6,7 @@ args <- commandArgs(trailingOnly = TRUE)
 df = read.delim(args[1])
 
 df = subset(df, df$id %in% read.delim("data/exon_gene.tsv", header=F)$V1)
+df = subset(df, df$id %in% read.delim("data/basic_internal_coding_exons.tsv", header=F)$V1)
 print(dim(df))
 
 unlist(lapply(strsplit(as.character(df$id),"_"),function(x){as.numeric(x[3])-as.numeric(x[2])+1})) -> df$len
