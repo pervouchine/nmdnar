@@ -22,5 +22,6 @@ while(<STDIN>) {
     $attr{'INT'} = join("_",@arr[0,3,4,6]);
     $attr{'FTR'} = $arr[2];
     $attr{'GEN'} = join("\t",@arr[0,3,4],@attr{gene_id},0,@arr[6]);
+    $attr{'RNG'} = join("\t",@arr[0,3,4],$attr{'INT'},0,@arr[6]);
     print join("\t",@attr{@ARGV}), "\n";
 }
