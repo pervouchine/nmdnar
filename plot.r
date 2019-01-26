@@ -41,8 +41,13 @@ df2$p = pnorm(-abs(df2$z))
 df2$p.adj = 1 - (1 - df2$p)^dim(df2)[1]
 df3 = subset(df2,p.adj<p.cutoff) %>% group_by(gene) %>% slice(which.min(p.adj))
 
-df2$NL.p = round(-log10(df2$p),2)
-df2$NL.p.adj = round(-log10(df2$p.adj),2)
+#pdf("distr.pdf")
+#ggplot(df2,aes(x=z)) + geom_histogram(aes(y=..density..),fill="blue",bins=20) + xlim(c(-3,3)) + geom_density(adjust=2) + theme_classic()
+#dev.off()
+
+df4 = df2
+df4$p = round(-log10(df2$p),2)
+df4$p.adj = round(-log10(df2$p.adj),2)
 
 p = ggplot(df2, aes(x=log10sjcount, y=deltaPSIc)) + geom_point(size=1, alpha=0.5,aes(color=(p.adj<p.cutoff))) + geom_density_2d(n=100,h=c(0.2,0.08),colour='#666666')
 p = p + geom_abline(slope=0,lty="dashed") + geom_label_repel(size=3, data=df3, aes(label = gene,color=(p.adj<p.cutoff)), min.segment.length = 0, force=10)
@@ -54,5 +59,5 @@ print(p)
 ggsave(width=5,height=6,paste(output, ".png", sep=""))
 dev.off()
 
-fileds = c('id', 'gene', 'deltaPSI', 'deltaPSIc', 'z', 'NL.p', 'NL.p.adj')
-write.table(df2[,fileds], file=paste(output, ".tsv", sep=""),col.names=T, row.names=F, quote=F, sep="\t")
+fileds = c('id', 'gene', 'deltaPSI', 'deltaPSIc', 'z', 'p', 'p.adj')
+write.table(df4[,fileds], file=paste(output, ".tsv", sep=""),col.names=T, row.names=F, quote=F, sep="\t")

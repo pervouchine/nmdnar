@@ -19,7 +19,7 @@ data/genes.bed : data/gencode.v19.annotation.gtf
 # exon_gene.tsv is a two-column tsv file containing exon_id and gene_id 
 # only protein-coding and NMD transcripts
 data/exon_gene.tsv : data/gencode.v19.annotation.gtf
-	awk '$$3=="exon"' data/gencode.v19.annotation.gtf | grep 'gene_type "protein_coding";' | grep 'transcript_type "protein_coding"\|transcript_type "nonsense_mediated_decay"' | perl Perl/print_gff_attributes.pl INT gene_name | sort -u > data/exon_gene.tsv 
+	awk '$$3=="exon"' data/gencode.v19.annotation.gtf | grep 'gene_type "protein_coding";' | grep 'transcript_type "protein_coding"\|transcript_type "nonsense_mediated_decay"' | grep -v cds_end_NF | perl Perl/print_gff_attributes.pl INT gene_name | sort -u > data/exon_gene.tsv 
 
 # a bed file with coordinates of cassette exons (see definition in the paper)
 data/cassette_exons.bed : data/gencode.v19.annotation.gtf

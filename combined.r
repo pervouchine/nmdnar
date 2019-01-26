@@ -15,7 +15,7 @@ df1 = read.delim(upf1)
 df2 = read.delim(smg6)
 df3 = merge(df1,df2,by='id',suffixes=c('.UPF1','.SMG6'))
 df3$deltaPSIc = with(df3, (deltaPSIc.UPF1+deltaPSIc.SMG6)/2)
-df3$p = with(df3, NL.p.UPF1+NL.p.SMG6)
+df3$p = with(df3, p.UPF1+p.SMG6)
 
 df4 = read.delim(self, col.names=c('KD','cell','id','gene','deltaPSI','deltaPSIc','z','p','p.adj','KDFC'))[,c('id','deltaPSIc','p','gene')]
 df = merge(df3,df4, by='id',suffixes=c('.NMD','.SELF'))
@@ -23,8 +23,6 @@ df = merge(df3,df4, by='id',suffixes=c('.NMD','.SELF'))
 eCLIP= read.delim(eclip, header=F)
 df$p.eCLIP = 10*(df$gene %in% eCLIP$V17)
 df$pval = with(df, p.NMD + p.SELF + p.eCLIP)
-
-write.table(df, file=paste(out,".tsv",sep=""), col.names=T, row.names=F, quote=F, sep="\t") 
 
 t = 0.1
 b = 0.5
@@ -43,3 +41,7 @@ p = p + theme_classic() + theme(legend.position="none") + scale_colour_manual(va
 pdf(width=7,height=7,paste(out,".pdf",sep=""))
 print(p)
 dev.off()
+
+arms = c("UPF1","SMG6","NMD","SELF")
+fields = c('id','gene',paste("deltaPSIc",arms, sep="."),paste("p",c(arms,"eCLIP"), sep="."),"pval")
+write.table(df[, fields], file=paste(out,".tsv",sep=""), col.names=T, row.names=F, quote=F, sep="\t")
