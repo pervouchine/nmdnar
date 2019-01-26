@@ -47,7 +47,7 @@ data/eCLIP/exon_pval.tsv : data/exon_gene.tsv data/eCLIP/exon_peaks.bed selfpeak
 # this is a bed file for track hub with all self peaks
 hub/eCLIP_peaks.bed :  data/eCLIP/self_peaks.bed
 	cut -f1-6 data/eCLIP/self_peaks.bed | awk -v OFS="\t" '{split($$4,a,"_");$$4=a[1];print}' | bedtools merge -s -c 4 -o distinct -i stdin | awk -v OFS="\t" '{print $$1,$$2,$$3,$$5,1000,$$4}' | sort -k1,1 -k2,2n > hub/eCLIP_peaks.bed
-	./bedToBigBed hub/eCLIP_peaks.bed hub/hg19/hg19.chrom.sizes hub/hg19/eCLIP.bb
+	./bedToBigBed hub/eCLIP_peaks.bed hub/hg19/hg19.chrom.sizes  hub/hg19/eCLIP.bb
 
 #### shRNA-KD ####
 
