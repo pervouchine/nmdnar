@@ -3,6 +3,7 @@ print(args)
 # Usage: Rscript plot.r target1 target2 control1 control2 pvalue.cutoff title output
 
 require(plyr)
+library(qvalue)
 
 compute_psi <- function(df) {
     df$sj_count = df$inc + 2*df$exc
@@ -53,10 +54,10 @@ df1$bin = cut(df1$log10sjcount, breaks=seq(0,6,0.5))
 merge(df1, ddply(df1,.(bin), summarise, mean=mean(deltaPSIc), sd=sd(deltaPSIc)))-> df2
 df2$z = with(df2, round((deltaPSIc-mean)/sd, digits=2))
 df2$p = pnorm(-abs(df2$z))
-df2$p.adj = 1 - (1 - df2$p)^dim(df2)[1]
-df2$NL.p = round(-log10(df2$p),2)
-df2$NL.p.adj = round(-log10(df2$p.adj),2)
+df2$q = qvalue_truncp(df2$p)$qvalues
+df2$p = round(-log10(df2$p),2)
+df2$q = round(-log10(df2$q),2)
 
-fileds = c('KD', 'cell', 'id', 'name', 'deltaPSI', 'deltaPSIc', 'z', 'NL.p', 'NL.p.adj','KDFC')
+fileds = c('KD', 'cell', 'id', 'name', 'deltaPSI', 'deltaPSIc', 'z', 'p', 'q','KDFC')
 write.table(df2[,fileds], file=output,col.names=T, row.names=F, quote=F, sep="\t")
 
