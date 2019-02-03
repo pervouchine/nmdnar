@@ -1,7 +1,6 @@
 .PHONY : all
 
 all :: data/upf1xrn1/upf1xrn1vscontrol.tsv data/upf1xrn1/smg6xrn1vscontrol.tsv
-all :: hub/shRNA-KD.bed hub/eCLIP_peaks.bed hub/upf1xrn1.bed
 
 ##### data download ######
 
@@ -47,17 +46,17 @@ data/eCLIP/self_peaks.bed : data/eCLIP/dump.tsv data/genes.bed
 # this is a bed file for track hub with all self peaks
 hub/eCLIP_peaks.bed :  data/eCLIP/self_peaks.bed
 	cut -f1-6 data/eCLIP/self_peaks.bed | awk -v OFS="\t" '{split($$4,a,"_");$$4=a[1];print}' | bedtools merge -s -c 4 -o distinct -i stdin | awk -v OFS="\t" '{print $$1,$$2,$$3,$$5,1000,$$4}' | sort -k1,1 -k2,2n > hub/eCLIP_peaks.bed
+
+hub/hg19/eCLIP.bb : hub/eCLIP_peaks.bed hub/hg19/hg19.chrom.sizes
 	./bedToBigBed hub/eCLIP_peaks.bed hub/hg19/hg19.chrom.sizes  hub/hg19/eCLIP.bb
+
+all :: hub/hg19/eCLIP.bb data/eCLIP/exon_peaks_dist.tsv
 
 #### shRNA-KD ####
 
 # this is a make file to compute deltaPSI for all shRNA-KD
 shRNA.mk : data/shRNA_table.tsv
 	awk -v dir=data/shRNA/ '{out=dir"B07/"$$6"_"$$5".tsv "; print  out ": "dir"A07/"$$1".A07.tsv "dir"A07/"$$2".A07.tsv "dir"A07/"$$3".A07.tsv "dir"A07/"$$4".A07.tsv data/exon_gene.tsv\n\tmkdir -p "dir"B07/\n\tRscript deltaPSIc.r "dir,$$1,$$2,$$3,$$4,$$5,$$6"\n"; all=all out}END{print "all :" all}' data/shRNA_table.tsv > shRNA.mk
-
-# this file is from a different project !!!!
-crispr.mk : data/crispr_table.tsv
-	awk -v dir=data/crispr/ '{out=dir"B07/"$$6"_"$$5".tsv "; print  out ": "dir"A07/"$$1".A07.tsv "dir"A07/"$$2".A07.tsv "dir"A07/"$$3".A07.tsv "dir"A07/"$$4".A07.tsv data/exon_gene.tsv\n\tmkdir -p "dir"B07/\n\tRscript deltaPSIc.r "dir,$$1,$$2,$$3,$$4,$$5,$$6"\n"; all=all out}END{print "all :" all}' data/crispr_table.tsv > crispr.mk
 
 # this file pools all deltaPSI for exons in RBPs
 data/shRNA/deltaPSI.tsv : shRNA.mk
@@ -68,8 +67,11 @@ data/shRNA/deltaPSI.tsv : shRNA.mk
 hub/shRNA-KD.bed : data/shRNA/deltaPSI.tsv
 	mkdir -p hub/
 	awk '$$6>0.05 || $$6<-0.05' data/shRNA/deltaPSI.tsv | awk -v OFS="\t" '{split($$3,a,"_");print a[1],a[2],a[3],"dPSI("$$1","$$2")="$$6,1000,a[4],a[2],a[3], ($$6>0? "255,0,0" : "0,0,255")}' | sort -k1,1 -k2,2n > hub/shRNA-KD.bed 
+
+hub/hg19/shRNA.bb : hub/shRNA-KD.bed hub/hg19/hg19.chrom.sizes
 	./bedToBigBed hub/shRNA-KD.bed hub/hg19/hg19.chrom.sizes hub/hg19/shRNA.bb
 
+all :: hub/hg19/shRNA.bb
 
 ####### UPF1/XRN1 KD ######
 
@@ -88,16 +90,15 @@ data/upf1xrn1/relpos.pdf : data/upf1xrn1/upf1xrn1vscontrol.tsv data/genes.bed
 	awk '$$4>=0.1 || $$4<=-0.1' data/upf1xrn1/upf1xrn1vscontrol.tsv | grep chr | awk -v OFS="\t" '{split($$1,a,"_");print a[1],a[2],a[3],$$1,1,a[4],$$4}' | sort -k1,1 -k2,2n | intersectBed -a stdin -b data/genes.bed -s -wa -wb -f 1 | awk -v OFS="\t" '{p = ($$2-$$9)/(($$10-$$9)-($$3-$$2));if($$6=="-"){p=1-p};print p,$$7}' | Rscript -e 'df = read.delim("stdin", header=F);df$$Group = factor(df$$V2>0, levels=c(T,F), labels=c("dPSI>0","dPSI<0"));library(ggplot2);pdf("data/upf1xrn1/relpos.pdf");ggplot(df,aes(x=100*V1,fill=Group)) + geom_histogram(position="identity",alpha=0.5,bins=20,aes(y=..density..)) + theme_bw() + xlab("Relative position, %")'
 
 # this is a bed file for track hub
-hub/upf1xrn1.bed : data/upf1xrn1/upf1xrn1vscontrol.tsv
-	tail -n+2 data/upf1xrn1/upf1xrn1vscontrol.tsv  | awk '$$4>0.05 || $$4<-0.05' | awk -v OFS="\t" '{split($$1,a,"_");print a[1],a[2],a[3],"dPSI(UPF1&XRN1)="$$4,1000,a[4],a[2],a[3], ($$4>0? "255,0,0" : "0,0,255")}' | sort -k1,1 -k2,2n > hub/upf1xrn1.bed 
-	./bedToBigBed hub/upf1xrn1.bed hub/hg19/hg19.chrom.sizes hub/hg19/upf1xrn1.bb
-
-hub/smg6xrn1.bed : data/upf1xrn1/smg6xrn1vscontrol.tsv
+hub/nmd.bed: data/upf1xrn1/upf1xrn1vscontrol.tsv data/upf1xrn1/smg6xrn1vscontrol.tsv
+	tail -n+2 data/upf1xrn1/upf1xrn1vscontrol.tsv  | awk '$$4>0.05 || $$4<-0.05' | awk -v OFS="\t" '{split($$1,a,"_");print a[1],a[2],a[3],"dPSI(UPF1&XRN1)="$$4,1000,a[4],a[2],a[3], ($$4>0? "255,0,0" : "0,0,255")}' | sort -k1,1 -k2,2n > hub/upf1xrn1.bed
 	tail -n+2 data/upf1xrn1/smg6xrn1vscontrol.tsv  | awk '$$4>0.05 || $$4<-0.05' | awk -v OFS="\t" '{split($$1,a,"_");print a[1],a[2],a[3],"dPSI(SMG6&XRN1)="$$4,1000,a[4],a[2],a[3], ($$4>0? "255,0,0" : "0,0,255")}' | sort -k1,1 -k2,2n > hub/smg6xrn1.bed 
-	./bedToBigBed hub/smg6xrn1.bed hub/hg19/hg19.chrom.sizes hub/hg19/smg61xrn1.bb
+	cat hub/upf1xrn1.bed hub/smg6xrn1.bed | sort -k1,1 -k2,2n > hub/nmd.bed
 
+hub/hg19/nmd.bb : hub/nmd.bed
+	./bedToBigBed hub/nmd.bed hub/hg19/hg19.chrom.sizes hub/hg19/nmd.bb
 
-all :: data/upf1xrn1/relpos.pdf hub/smg6xrn1.bed  
+all :: data/upf1xrn1/relpos.pdf hub/hg19/nmd.bb
 
 ####################
 
