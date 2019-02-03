@@ -31,18 +31,18 @@ data/stop.tsv : data/gencode.v19.annotation.gtf data/cassette_exons.bed
 
 #### eCLIP ####
 
-# exon_peaks.bed contains eCLIP peaks in 1000-nt window around exons
+# exon_peaks.bed contains eCLIP peaks in 5000-nt window around exons
 # cols 1-6 are exon windows (#4 is exon id); #7 is gene name
 # cols 7-17 are eCLIP peaks
 data/eCLIP/exon_peaks.bed : data/eCLIP/dump.tsv data/exon_gene.tsv
-	awk -v OFS="\t" -v w=1000 '{split($$1,a,"_");if(a[2]<w){a[2]=w};print a[1],a[2]-w,a[3]+w,$$1,1,a[4],$$2}' data/exon_gene.tsv | intersectBed -a stdin -b data/eCLIP/dump.tsv -wa -wb -s > data/eCLIP/exon_peaks.bed
+	awk -v OFS="\t" -v w=5000 '{split($$1,a,"_");if(a[2]<w){a[2]=w};print a[1],a[2]-w,a[3]+w,$$1,1,a[4],$$2}' data/exon_gene.tsv | intersectBed -a stdin -b data/eCLIP/dump.tsv -wa -wb -s > data/eCLIP/exon_peaks.bed
+
+data/eCLIP/exon_peaks_dist.tsv : data/eCLIP/exon_peaks.bed
+	awk -v OFS="\t" '{split($$11,a,"_");if(a[1]==$$7){d=(($$9+$$10)-($$2+$$3))/2;if(d<0){d=-d};print $$4,a[1],d}}' data/eCLIP/exon_peaks.bed > data/eCLIP/exon_peaks_dist.tsv
 
 # self_peaks.tsv contains three columns: exon_id, peak_id, gene name
-data/eCLIP/self_peaks.bed : data/eCLIP/exon_peaks.bed data/genes.bed
+data/eCLIP/self_peaks.bed : data/eCLIP/dump.tsv data/genes.bed
 	intersectBed -a data/eCLIP/dump.tsv -b data/genes.bed -wa -wb -s | awk '{split($$4,a,"_");if(a[1]==$$17){print}}' | sort -k1,1 -k2,2n > data/eCLIP/self_peaks.bed
-
-data/eCLIP/exon_pval.tsv : data/exon_gene.tsv data/eCLIP/exon_peaks.bed selfpeaks.r 
-	Rscript selfpeaks.r data/exon_gene.tsv data/eCLIP/exon_peaks.bed data/eCLIP/exon_pval.tsv
 
 # this is a bed file for track hub with all self peaks
 hub/eCLIP_peaks.bed :  data/eCLIP/self_peaks.bed
@@ -67,7 +67,7 @@ data/shRNA/deltaPSI.tsv : shRNA.mk
 # this is a bed file for track hub
 hub/shRNA-KD.bed : data/shRNA/deltaPSI.tsv
 	mkdir -p hub/
-	awk '$$6>0.05 || $$6<-0.05' data/shRNA/deltaPSI.tsv | awk -v OFS="\t" '{split($$3,a,"_");print a[1],a[2],a[3],"dPSI("$$1","$$2")="$$6,1000,a[4],a[2],a[3], ($$6>0? "255,0,0" : "0,0,255")}' | sort -k1,1 -k2,2n > hub/shRNA-KD.bed #| awk 'BEGIN{print "track name=\"shRNA-KD\" description=\"delta PSI in RBP shRNA-KD\" visibility=3 itemRgb=\"On\""}{print}'> hub/shRNA-KD.bed
+	awk '$$6>0.05 || $$6<-0.05' data/shRNA/deltaPSI.tsv | awk -v OFS="\t" '{split($$3,a,"_");print a[1],a[2],a[3],"dPSI("$$1","$$2")="$$6,1000,a[4],a[2],a[3], ($$6>0? "255,0,0" : "0,0,255")}' | sort -k1,1 -k2,2n > hub/shRNA-KD.bed 
 	./bedToBigBed hub/shRNA-KD.bed hub/hg19/hg19.chrom.sizes hub/hg19/shRNA.bb
 
 
@@ -75,21 +75,34 @@ hub/shRNA-KD.bed : data/shRNA/deltaPSI.tsv
 
 # this step generates a pdf, png, and tsv table for UPF1/XRN1 KD vs control
 data/upf1xrn1/upf1xrn1vscontrol.tsv : data/upf1xrn1/A07/SRR1275413Aligned.sortedByCoord.out.A07.tsv data/upf1xrn1/A07/SRR1275416Aligned.sortedByCoord.out.A07.tsv plot.r data/exon_gene.tsv data/exon_gene.tsv
-	Rscript plot.r data/upf1xrn1/A07/SRR1275413Aligned.sortedByCoord.out.A07.tsv data/upf1xrn1/A07/SRR1275416Aligned.sortedByCoord.out.A07.tsv 0.01 UPF1/XRN1 data/upf1xrn1/upf1xrn1vscontrol 
+	Rscript plot.r data/upf1xrn1/A07/SRR1275413Aligned.sortedByCoord.out.A07.tsv data/upf1xrn1/A07/SRR1275416Aligned.sortedByCoord.out.A07.tsv 0.001 UPF1/XRN1 data/upf1xrn1/upf1xrn1vscontrol 
 
 # same for SMG6
 data/upf1xrn1/smg6xrn1vscontrol.tsv : data/upf1xrn1/A07/SRR1275413Aligned.sortedByCoord.out.A07.tsv data/upf1xrn1/A07/SRR1275415Aligned.sortedByCoord.out.A07.tsv plot.r data/exon_gene.tsv data/exon_gene.tsv
-	Rscript plot.r data/upf1xrn1/A07/SRR1275413Aligned.sortedByCoord.out.A07.tsv data/upf1xrn1/A07/SRR1275415Aligned.sortedByCoord.out.A07.tsv 0.01 SMG6/XRN1 data/upf1xrn1/smg6xrn1vscontrol
+	Rscript plot.r data/upf1xrn1/A07/SRR1275413Aligned.sortedByCoord.out.A07.tsv data/upf1xrn1/A07/SRR1275415Aligned.sortedByCoord.out.A07.tsv 0.001 SMG6/XRN1 data/upf1xrn1/smg6xrn1vscontrol
+
+data/upf1xrn1/deltaPSI.tsv : upf1andsmg6.r data/upf1xrn1/upf1xrn1vscontrol.tsv data/upf1xrn1/smg6xrn1vscontrol.tsv
+	Rscript upf1andsmg6.r data/upf1xrn1/upf1xrn1vscontrol.tsv data/upf1xrn1/smg6xrn1vscontrol.tsv data/upf1xrn1/deltaPSI.tsv
+
+data/upf1xrn1/relpos.pdf : data/upf1xrn1/upf1xrn1vscontrol.tsv data/genes.bed
+	awk '$$4>=0.1 || $$4<=-0.1' data/upf1xrn1/upf1xrn1vscontrol.tsv | grep chr | awk -v OFS="\t" '{split($$1,a,"_");print a[1],a[2],a[3],$$1,1,a[4],$$4}' | sort -k1,1 -k2,2n | intersectBed -a stdin -b data/genes.bed -s -wa -wb -f 1 | awk -v OFS="\t" '{p = ($$2-$$9)/(($$10-$$9)-($$3-$$2));if($$6=="-"){p=1-p};print p,$$7}' | Rscript -e 'df = read.delim("stdin", header=F);df$$Group = factor(df$$V2>0, levels=c(T,F), labels=c("dPSI>0","dPSI<0"));library(ggplot2);pdf("data/upf1xrn1/relpos.pdf");ggplot(df,aes(x=100*V1,fill=Group)) + geom_histogram(position="identity",alpha=0.5,bins=20,aes(y=..density..)) + theme_bw() + xlab("Relative position, %")'
 
 # this is a bed file for track hub
 hub/upf1xrn1.bed : data/upf1xrn1/upf1xrn1vscontrol.tsv
-	tail -n+2 data/upf1xrn1/upf1xrn1vscontrol.tsv  | awk '$$4>0.05 || $$4<-0.05' | awk -v OFS="\t" '{split($$1,a,"_");print a[1],a[2],a[3],"dPSI(UPF1&XRN1)="$$4,1000,a[4],a[2],a[3], ($$4>0? "255,0,0" : "0,0,255")}' | sort -k1,1 -k2,2n > hub/upf1xrn1.bed #| awk 'BEGIN{print "track name=\"UPF1/XRN1-KD\" description=\"delta PSI in UPF1-KD\" visibility=3 itemRgb=\"On\""}{print}'> hub/upf1xrn1.bed
+	tail -n+2 data/upf1xrn1/upf1xrn1vscontrol.tsv  | awk '$$4>0.05 || $$4<-0.05' | awk -v OFS="\t" '{split($$1,a,"_");print a[1],a[2],a[3],"dPSI(UPF1&XRN1)="$$4,1000,a[4],a[2],a[3], ($$4>0? "255,0,0" : "0,0,255")}' | sort -k1,1 -k2,2n > hub/upf1xrn1.bed 
 	./bedToBigBed hub/upf1xrn1.bed hub/hg19/hg19.chrom.sizes hub/hg19/upf1xrn1.bb
+
+hub/smg6xrn1.bed : data/upf1xrn1/smg6xrn1vscontrol.tsv
+	tail -n+2 data/upf1xrn1/smg6xrn1vscontrol.tsv  | awk '$$4>0.05 || $$4<-0.05' | awk -v OFS="\t" '{split($$1,a,"_");print a[1],a[2],a[3],"dPSI(SMG6&XRN1)="$$4,1000,a[4],a[2],a[3], ($$4>0? "255,0,0" : "0,0,255")}' | sort -k1,1 -k2,2n > hub/smg6xrn1.bed 
+	./bedToBigBed hub/smg6xrn1.bed hub/hg19/hg19.chrom.sizes hub/hg19/smg61xrn1.bb
+
+
+all :: data/upf1xrn1/relpos.pdf hub/smg6xrn1.bed  
 
 ####################
 
-data/combined.tsv data/combined.pdf: data/upf1xrn1/upf1xrn1vscontrol.tsv data/upf1xrn1/smg6xrn1vscontrol.tsv data/shRNA/deltaPSI.tsv combined.r data/eCLIP/self_peaks.bed
-	Rscript combined.r data/upf1xrn1/upf1xrn1vscontrol.tsv data/upf1xrn1/smg6xrn1vscontrol.tsv data/shRNA/deltaPSI.tsv data/eCLIP/self_peaks.bed data/combined
+data/combined.tsv data/combined.pdf: data/upf1xrn1/deltaPSI.tsv data/shRNA/deltaPSI.tsv combined.r data/eCLIP/self_peaks.bed
+	Rscript combined.r data/upf1xrn1/deltaPSI.tsv data/shRNA/deltaPSI.tsv data/eCLIP/self_peaks.bed data/combined
 
 data/poison.pdf : poison.r data/upf1xrn1/upf1xrn1vscontrol.tsv data/stop.tsv
 	Rscript poison.r data/upf1xrn1/upf1xrn1vscontrol.tsv data/poison.pdf
