@@ -16,13 +16,12 @@ f<-function(x) {y=max(abs(x))*sign(x[1]);if(length(x)==2 & prod(x)<0){y=NA};y}
 df2 = ddply(df2,.(id,gene),summarize, deltaPSIc=f(deltaPSIc), p=mean(p), q=mean(q))
 df = merge(df1,df2, by=c('id','gene'),suffixes=c('.NMD','.SELF'))
 
-#eCLIP= read.delim(eclip, header=F)
-#df$p.eCLIP = 1*(df$gene %in% eCLIP$V17)
-#df$q.eCLIP = 1*(df$gene %in% eCLIP$V17)
-
-eCLIP = read.delim("data/eCLIP/exon_peaks_dist.tsv", header=F)
-df$p.eCLIP = df$q.eCLIP = df$id %in% eCLIP$V1
-
+ds = read.delim(eclip, col.names=c('id','gene','d','p.eCLIP'))
+ds$p.eCLIP = round(ds$p.eCLIP, digits=2)
+eCLIP = ds %>% group_by(id,gene,p.eCLIP) %>% slice(which.min(d))
+df = merge(df, eCLIP, all.x=T)
+df$p.eCLIP[is.na(df$p.eCLIP)] = 0
+df$q.eCLIP = df$p.eCLIP
 df$Score = with(df, q.NMD + q.SELF + q.eCLIP)
 
 arms = c("UPF1","SMG6","NMD","SELF")

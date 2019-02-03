@@ -37,7 +37,7 @@ data/eCLIP/exon_peaks.bed : data/eCLIP/dump.tsv data/exon_gene.tsv
 	awk -v OFS="\t" -v w=5000 '{split($$1,a,"_");if(a[2]<w){a[2]=w};print a[1],a[2]-w,a[3]+w,$$1,1,a[4],$$2}' data/exon_gene.tsv | intersectBed -a stdin -b data/eCLIP/dump.tsv -wa -wb -s > data/eCLIP/exon_peaks.bed
 
 data/eCLIP/exon_peaks_dist.tsv : data/eCLIP/exon_peaks.bed
-	awk -v OFS="\t" '{split($$11,a,"_");if(a[1]==$$7){d=(($$9+$$10)-($$2+$$3))/2;if(d<0){d=-d};print $$4,a[1],d}}' data/eCLIP/exon_peaks.bed > data/eCLIP/exon_peaks_dist.tsv
+	awk -v OFS="\t" '{split($$11,a,"_");if(a[1]==$$7){d=(($$9+$$10)-($$2+$$3))/2;if(d<0){d=-d};print $$4,a[1],d,$$14}}' data/eCLIP/exon_peaks.bed > data/eCLIP/exon_peaks_dist.tsv
 
 # self_peaks.tsv contains three columns: exon_id, peak_id, gene name
 data/eCLIP/self_peaks.bed : data/eCLIP/dump.tsv data/genes.bed
@@ -102,8 +102,8 @@ all :: data/upf1xrn1/relpos.pdf hub/hg19/nmd.bb
 
 ####################
 
-data/combined.tsv data/combined.pdf: data/upf1xrn1/deltaPSI.tsv data/shRNA/deltaPSI.tsv combined.r data/eCLIP/self_peaks.bed
-	Rscript combined.r data/upf1xrn1/deltaPSI.tsv data/shRNA/deltaPSI.tsv data/eCLIP/self_peaks.bed data/combined
+data/combined.tsv data/combined.pdf: data/upf1xrn1/deltaPSI.tsv data/shRNA/deltaPSI.tsv combined.r data/eCLIP/exon_peaks_dist.tsv
+	Rscript combined.r data/upf1xrn1/deltaPSI.tsv data/shRNA/deltaPSI.tsv data/eCLIP/exon_peaks_dist.tsv data/combined
 
 data/poison.pdf : poison.r data/upf1xrn1/upf1xrn1vscontrol.tsv data/stop.tsv
 	Rscript poison.r data/upf1xrn1/upf1xrn1vscontrol.tsv data/poison.pdf
