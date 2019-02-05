@@ -10,6 +10,8 @@ Dependencies:
 # R packages: ggplot2, ggrepel, plyr, dplyr, ggsignif
 # bedtools v2.25.0
 # bedToBigBed
+# devtools
+# jdstorey/qvalue (install_github("jdstorey/qvalue"))
 
 ## Data structure
 There are three data repositories in this project
