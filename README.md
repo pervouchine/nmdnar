@@ -19,4 +19,5 @@ There are three data repositories in this project
 1. eCLIP
 2. shRNA-KD followed by RNA-seq
 3. shRNA-codepletion of UPF1/XRN1 and SMG6/XRN1
-After unpacking, they will be stored in data/ directory
+
+They have been pre-processed by IPSA pipeline (https://github.com/pervouchine/ipsa) and deposited in compressed form at our local data storage (https://cb.skoltech.ru/~dp/papers/nmd/data.tar.gz). The pipeline will automatically download and unpack it. After unpacking, the data will be stored in data/ directory.
