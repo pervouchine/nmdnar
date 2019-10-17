@@ -99,8 +99,8 @@ data/upf1xrn1/relpos.pdf : data/upf1xrn1/upf1xrn1vscontrol.tsv data/genes.bed
 
 # this is a bed file for track hub
 hub/nmd.bed: data/upf1xrn1/upf1xrn1vscontrol.tsv data/upf1xrn1/smg6xrn1vscontrol.tsv
-	tail -n+2 data/upf1xrn1/upf1xrn1vscontrol.tsv  | awk '$$4>0.05 || $$4<-0.05' | awk -v OFS="\t" '{split($$1,a,"_");print a[1],a[2],a[3],"dPSI(UPF1&XRN1)="$$4,1000,a[4],a[2],a[3], ($$4>0? "255,165,0" : "139,0,139")}' | sort -k1,1 -k2,2n > hub/upf1xrn1.bed
-	tail -n+2 data/upf1xrn1/smg6xrn1vscontrol.tsv  | awk '$$4>0.05 || $$4<-0.05' | awk -v OFS="\t" '{split($$1,a,"_");print a[1],a[2],a[3],"dPSI(SMG6&XRN1)="$$4,1000,a[4],a[2],a[3], ($$4>0? "255,165,0" : "139,0,139")}' | sort -k1,1 -k2,2n > hub/smg6xrn1.bed 
+	tail -n+2 data/upf1xrn1/upf1xrn1vscontrol.tsv  | awk '$$4>0.05 || $$4<-0.05' | awk -v OFS="\t" '{split($$1,a,"_");print a[1],a[2],a[3],"dPSI(UPF1&XRN1)="$$4,1000,a[4],a[2],a[3], ($$4>0? "255,215,0" : "139,0,139")}' | sort -k1,1 -k2,2n > hub/upf1xrn1.bed
+	tail -n+2 data/upf1xrn1/smg6xrn1vscontrol.tsv  | awk '$$4>0.05 || $$4<-0.05' | awk -v OFS="\t" '{split($$1,a,"_");print a[1],a[2],a[3],"dPSI(SMG6&XRN1)="$$4,1000,a[4],a[2],a[3], ($$4>0? "255,215,0" : "139,0,139")}' | sort -k1,1 -k2,2n > hub/smg6xrn1.bed 
 	cat hub/upf1xrn1.bed hub/smg6xrn1.bed | sort -k1,1 -k2,2n > hub/nmd.bed
 
 # and its bigBed version
