@@ -51,6 +51,7 @@ hub/eCLIP_peaks.bed :  data/eCLIP/self_peaks.bed
 # A bigBed version of it for track hub
 hub/hg19/eCLIP.bb : hub/eCLIP_peaks.bed hub/hg19/hg19.chrom.sizes
 	./bedToBigBed hub/eCLIP_peaks.bed hub/hg19/hg19.chrom.sizes  hub/hg19/eCLIP.bb
+	git add hub/hg19/eCLIP.bb
 
 all :: hub/hg19/eCLIP.bb data/eCLIP/exon_peaks_dist.tsv
 
@@ -74,6 +75,7 @@ hub/shRNA-KD.bed : data/shRNA/deltaPSI.tsv
 # and its bigBed version
 hub/hg19/shRNA.bb : hub/shRNA-KD.bed hub/hg19/hg19.chrom.sizes
 	./bedToBigBed hub/shRNA-KD.bed hub/hg19/hg19.chrom.sizes hub/hg19/shRNA.bb
+	git add hub/hg19/shRNA.bb
 
 all :: hub/hg19/shRNA.bb
 
@@ -97,13 +99,14 @@ data/upf1xrn1/relpos.pdf : data/upf1xrn1/upf1xrn1vscontrol.tsv data/genes.bed
 
 # this is a bed file for track hub
 hub/nmd.bed: data/upf1xrn1/upf1xrn1vscontrol.tsv data/upf1xrn1/smg6xrn1vscontrol.tsv
-	tail -n+2 data/upf1xrn1/upf1xrn1vscontrol.tsv  | awk '$$4>0.05 || $$4<-0.05' | awk -v OFS="\t" '{split($$1,a,"_");print a[1],a[2],a[3],"dPSI(UPF1&XRN1)="$$4,1000,a[4],a[2],a[3], ($$4>0? "255,0,0" : "0,0,255")}' | sort -k1,1 -k2,2n > hub/upf1xrn1.bed
-	tail -n+2 data/upf1xrn1/smg6xrn1vscontrol.tsv  | awk '$$4>0.05 || $$4<-0.05' | awk -v OFS="\t" '{split($$1,a,"_");print a[1],a[2],a[3],"dPSI(SMG6&XRN1)="$$4,1000,a[4],a[2],a[3], ($$4>0? "255,0,0" : "0,0,255")}' | sort -k1,1 -k2,2n > hub/smg6xrn1.bed 
+	tail -n+2 data/upf1xrn1/upf1xrn1vscontrol.tsv  | awk '$$4>0.05 || $$4<-0.05' | awk -v OFS="\t" '{split($$1,a,"_");print a[1],a[2],a[3],"dPSI(UPF1&XRN1)="$$4,1000,a[4],a[2],a[3], ($$4>0? "255,69,0" : "139,0,139")}' | sort -k1,1 -k2,2n > hub/upf1xrn1.bed
+	tail -n+2 data/upf1xrn1/smg6xrn1vscontrol.tsv  | awk '$$4>0.05 || $$4<-0.05' | awk -v OFS="\t" '{split($$1,a,"_");print a[1],a[2],a[3],"dPSI(SMG6&XRN1)="$$4,1000,a[4],a[2],a[3], ($$4>0? "255,69,0" : "139,0,139")}' | sort -k1,1 -k2,2n > hub/smg6xrn1.bed 
 	cat hub/upf1xrn1.bed hub/smg6xrn1.bed | sort -k1,1 -k2,2n > hub/nmd.bed
 
 # and its bigBed version
 hub/hg19/nmd.bb : hub/nmd.bed
 	./bedToBigBed hub/nmd.bed hub/hg19/hg19.chrom.sizes hub/hg19/nmd.bb
+	git add hub/hg19/nmd.bb
 
 all :: data/upf1xrn1/relpos.pdf hub/hg19/nmd.bb
 
