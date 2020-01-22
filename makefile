@@ -5,7 +5,7 @@ all :: data/upf1xrn1/upf1xrn1vscontrol.tsv data/upf1xrn1/smg6xrn1vscontrol.tsv
 ##### data download ######
 
 data/shRNA_table.tsv data/upf1xrn1/A07/SRR1275413Aligned.sortedByCoord.out.A07.tsv :
-	wget --no-check-certificate https://cb.skoltech.ru/~dp/papers/nmd/data.tar.gz
+	wget --no-check-certificate http://cb.skoltech.ru/dp/papers/nmd/data.tar.gz
 	tar -xf data.tar.gz
 	rm -f data.tar.gz
 
