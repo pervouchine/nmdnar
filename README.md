@@ -12,7 +12,10 @@ Dependencies:
 * bedtools v2.25.0
 * bedToBigBed
 * devtools
-* jdstorey/qvalue (install_github("jdstorey/qvalue"))
+
+To install qvalue package
+* install.packages("remotes")
+* remotes::install_github("jdstorey/qvalue")
 
 ## Data structure
 There are three data repositories in this project
